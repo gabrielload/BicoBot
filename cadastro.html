@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Profissional</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #43cea2, #185a9d);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #185a9d;
+      margin-bottom: 1.5rem;
+    }
+
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    form button {
+      width: 100%;
+      padding: 0.9rem;
+      background-color: #43cea2;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    form button:hover {
+      background-color: #2ab28d;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cadastro de Profissional</h1>
+    <form id="cadastro-form">
+      <input type="text" id="nome" placeholder="Nome completo" required />
+      <textarea id="descricao" placeholder="Descrição do profissional" rows="4" required></textarea>
+      <input type="text" id="telefone" placeholder="Telefone" required />
+      <input type="text" id="cep" placeholder="CEP (somente números)" required />
+      <input type="text" id="cidade" placeholder="Cidade" required />
+      <input type="text" id="servico" placeholder="Serviços (separados por vírgula)" required />
+      <input type="number" step="0.1" id="nota" placeholder="Nota (ex: 4.5)" required />
+      <button type="submit">Cadastrar</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHG-CSJzOhmuYpjM9i6cEqBJtGDqxuSD8",
+      authDomain: "bicudos-c9ff0.firebaseapp.com",
+      projectId: "bicudos-c9ff0",
+      storageBucket: "bicudos-c9ff0.appspot.com",
+      messagingSenderId: "81469971834",
+      appId: "1:81469971834:web:43100abd81b5b3d2e80ac3",
+      measurementId: "G-JT1CX0HTKB"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const form = document.getElementById("cadastro-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById("nome").value;
+      const descricao = document.getElementById("descricao").value;
+      const telefone = document.getElementById("telefone").value;
+      const cep = document.getElementById("cep").value;
+      const cidade = document.getElementById("cidade").value.toLowerCase();
+      const servico = document.getElementById("servico").value.split(",").map(s => s.trim());
+      const nota = parseFloat(document.getElementById("nota").value);
+      const cep_prefixo = parseInt(cep.substring(0, 5));
+
+      const profissional = { nome, descricao, telefone, cep, cep_prefixo, cidade, servico, nota };
+
+      try {
+        await addDoc(collection(db, "profissionais"), profissional);
+        alert("✅ Profissional cadastrado com sucesso!");
+        form.reset();
+      } catch (error) {
+        console.error("❌ Erro:", error);
+        alert("Erro ao cadastrar profissional.");
+      }
+    });
+  </script>
+</body>
+</html>

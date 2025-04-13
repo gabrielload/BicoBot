@@ -1,0 +1,17 @@
+{
+  "name": "robo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "reset": "rmdir /s /q auth_info_baileys && node index.js"
+    
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.4",
+    "firebase": "^11.6.0",
+    "firebase-admin": "^13.2.0"
+  }
+}
