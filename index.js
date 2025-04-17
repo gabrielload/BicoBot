@@ -1,7 +1,6 @@
 // =======================
 // 📦 IMPORTAÇÕES
 // =======================
-
 import {
   makeWASocket,
   useMultiFileAuthState,
@@ -54,7 +53,12 @@ const cepPrefixMap = {
 // 🧰 UTILITÁRIOS
 // =======================
 const getGreeting = () => {
-  const hour = new Date().getHours();
+  const now = new Date();
+  const horaBrasilia = new Date(now.toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo'
+  }));
+  const hour = horaBrasilia.getHours();
+
   if (hour < 12) return 'Bom dia! ☀️';
   if (hour < 18) return 'Boa tarde! 🌤️';
   return 'Boa noite! 🌙';
@@ -173,10 +177,10 @@ const connectToWhatsApp = async () => {
         });
         session.step = 2;
         break;
-// olá
+
       case 2:
         const index = parseInt(text.trim(), 10) - 1;
-        const servico = session.data.servicoOptions?.[index]; 
+        const servico = session.data.servicoOptions?.[index];
         if (!servico) {
           await sock.sendMessage(sender, {
             text: '❗ Por favor, envie apenas o número correspondente ao serviço desejado. 🦆'
