@@ -52,18 +52,6 @@ const cepPrefixMap = {
 // =======================
 // 🧰 UTILITÁRIOS
 // =======================
-const getGreeting = () => {
-  const now = new Date();
-  const horaBrasilia = new Date(now.toLocaleString('pt-BR', {
-    timeZone: 'America/Sao_Paulo'
-  }));
-  const hour = horaBrasilia.getHours();
-
-  if (hour < 12) return 'Bom dia! ☀️';
-  if (hour < 18) return 'Boa tarde! 🌤️';
-  return 'Boa noite! 🌙';
-};
-
 const getServicosDisponiveis = async () => {
   const snapshot = await getDocs(collection(db, "profissionais"));
   const servicosSet = new Set();
@@ -77,7 +65,7 @@ const getServicosDisponiveis = async () => {
 };
 
 const mostrarProfissionais = async (sock, sender, snapshot) => {
-  let resposta = "🦆 Profissionais encontrados com muito carinho:\n\n";
+  let resposta = "✨ Profissionais disponíveis no momento:\n\n";
 
   snapshot.forEach(doc => {
     const p = doc.data();
@@ -92,7 +80,7 @@ const mostrarProfissionais = async (sock, sender, snapshot) => {
     resposta += `📝 Sobre: ${p.descricao}\n\n`;
   });
 
-  resposta += "❓ Posso te ajudar com mais alguma coisa? (sim/não) 🦆";
+  resposta += "Posso ajudar com mais alguma coisa? (sim/não) 🦆";
   await sock.sendMessage(sender, { text: resposta });
 };
 
@@ -137,10 +125,9 @@ const connectToWhatsApp = async () => {
     if (sessions[sender].timeout) clearTimeout(sessions[sender].timeout);
     sessions[sender].timeout = setTimeout(() => {
       sock.sendMessage(sender, {
-        text: "😴 Acho que você se ausentou... Quando quiser, é só me chamar de novo! 🦆"
+        text: "Tudo bem por aí? Vou encerrar nosso papo por enquanto. Quando quiser, é só me chamar de novo. 🦆"
       });
       delete sessions[sender];
-      console.log(`⌛ Sessão expirada para ${sender}`);
     }, 5 * 60 * 1000);
 
     const session = sessions[sender];
@@ -148,11 +135,7 @@ const connectToWhatsApp = async () => {
     switch (session.step) {
       case 0:
         await sock.sendMessage(sender, {
-          text: `🦆 Olá! Eu sou o Bico, seu assistente virtual que conecta você com profissionais incríveis! 💼✨\n\n🚧 Estou em versão beta, então se algo der errado, me avisa aqui:\n📋 https://forms.gle/seu-link-aqui\n\nVamos começar? 😄`
-        });
-        await delay(2000);
-        await sock.sendMessage(sender, {
-          text: `${getGreeting()} Como posso te chamar? 😊`
+          text: `Oi! Eu sou o Bico, seu assistente para encontrar profissionais incríveis pertinho de você. 💼🦆\n\nEstou em versão beta, então se algo parecer estranho, você pode me ajudar com sugestões aqui:\n📋 https://forms.gle/seu-link-aqui\n\nVamos começar? Me diz como posso te chamar. 😄`
         });
         session.step = 1;
         break;
@@ -163,7 +146,7 @@ const connectToWhatsApp = async () => {
 
         if (servicos.length === 0) {
           await sock.sendMessage(sender, {
-            text: "⚠️ Nenhum serviço disponível no momento. Tente novamente mais tarde, tá bem? 🦆"
+            text: "No momento não temos serviços cadastrados. Volte daqui a pouquinho! 😉"
           });
           delete sessions[sender];
           return;
@@ -173,7 +156,7 @@ const connectToWhatsApp = async () => {
         const opcoesTexto = servicos.map((s, i) => `${i + 1}. ${s}`).join('\n');
 
         await sock.sendMessage(sender, {
-          text: `Prazer, ${session.data.nome}! 😄 Escolha um dos serviços abaixo que você está procurando:\n\n${opcoesTexto}`
+          text: `Prazer, ${session.data.nome}! 😄 Escolha o serviço que você está buscando:\n\n${opcoesTexto}`
         });
         session.step = 2;
         break;
@@ -183,13 +166,13 @@ const connectToWhatsApp = async () => {
         const servico = session.data.servicoOptions?.[index];
         if (!servico) {
           await sock.sendMessage(sender, {
-            text: '❗ Por favor, envie apenas o número correspondente ao serviço desejado. 🦆'
+            text: 'Por favor, envie só o número do serviço que você quer. 🦆'
           });
           return;
         }
         session.data.servico = servico;
         await sock.sendMessage(sender, {
-          text: '📍 Agora me diga seu CEP para encontrarmos os melhores profissionais próximos de você! 😊'
+          text: 'Agora me manda seu CEP pra eu buscar os profissionais mais próximos. 🗺️'
         });
         session.step = 3;
         break;
@@ -225,21 +208,21 @@ const connectToWhatsApp = async () => {
                 session.step = 5;
               } else {
                 await sock.sendMessage(sender, {
-                  text: "😕 Não achei ninguém com esse CEP... Qual é sua cidade? (ex: São Paulo) 🦆"
+                  text: "Hmm, não encontrei ninguém com esse CEP. Qual o nome da sua cidade? (ex: São Paulo) 🦆"
                 });
                 session.step = 6;
               }
             } else {
               await sock.sendMessage(sender, {
-                text: "📮 Não consegui identificar sua cidade pelo CEP. Digite o nome da sua cidade (ex: São Paulo). 🦆"
+                text: "Não consegui identificar a cidade pelo CEP. Me diga o nome dela (ex: São Paulo). 🦆"
               });
               session.step = 6;
             }
           }
         } catch (err) {
-          console.error("❌ Erro ao buscar profissionais:", err);
+          console.error("Erro ao buscar profissionais:", err);
           await sock.sendMessage(sender, {
-            text: "⚠️ Ocorreu um erro inesperado. Tente novamente mais tarde! 🦆"
+            text: "Tivemos um probleminha aqui... pode tentar de novo em instantes? 🦆"
           });
           session.step = 0;
         }
@@ -257,7 +240,7 @@ const connectToWhatsApp = async () => {
 
           if (resultado.empty) {
             await sock.sendMessage(sender, {
-              text: "😔 Ainda não temos profissionais nessa cidade. Quer tentar outra? (sim/não)"
+              text: "Poxa, ainda não temos profissionais nessa cidade. Quer tentar outra? (sim/não)"
             });
             session.step = 4;
           } else {
@@ -265,9 +248,9 @@ const connectToWhatsApp = async () => {
             session.step = 5;
           }
         } catch (err) {
-          console.error("❌ Erro ao buscar por cidade:", err);
+          console.error("Erro ao buscar por cidade:", err);
           await sock.sendMessage(sender, {
-            text: "⚠️ Algo deu errado na busca. Me desculpe! 🦆"
+            text: "Algo deu errado na busca... me perdoa! 🦆"
           });
           session.step = 0;
         }
@@ -276,12 +259,12 @@ const connectToWhatsApp = async () => {
       case 4:
         if (text.toLowerCase() === 'sim') {
           await sock.sendMessage(sender, {
-            text: '📮 Qual o novo CEP? Vamos tentar de novo! 🦆'
+            text: 'Me manda outro CEP que eu tento de novo! 🦆'
           });
           session.step = 3;
         } else {
           await sock.sendMessage(sender, {
-            text: '🦆 Obrigado por usar o Bico! Até a próxima! 👋'
+            text: 'Obrigado por conversar comigo! Até a próxima. 👋'
           });
           delete sessions[sender];
         }
@@ -292,7 +275,7 @@ const connectToWhatsApp = async () => {
           const servicos = await getServicosDisponiveis();
           if (servicos.length === 0) {
             await sock.sendMessage(sender, {
-              text: "⚠️ Nenhum serviço disponível no momento. Tente mais tarde, tá bom? 🦆"
+              text: "No momento não temos outros serviços. Volte em breve, tá bom? 🦆"
             });
             delete sessions[sender];
             return;
@@ -302,12 +285,12 @@ const connectToWhatsApp = async () => {
           const opcoesTexto = servicos.map((s, i) => `${i + 1}. ${s}`).join('\n');
 
           await sock.sendMessage(sender, {
-            text: `Beleza! Escolha o novo serviço que você precisa. 😄\n\n${opcoesTexto}`
+            text: `Claro! Escolha o próximo serviço que você precisa:\n\n${opcoesTexto}`
           });
           session.step = 2;
         } else {
           await sock.sendMessage(sender, {
-            text: '🦆 Foi um prazer te ajudar! Até logo! 👋'
+            text: 'Foi um prazer te ajudar! Volte quando quiser. 🦆'
           });
           delete sessions[sender];
         }
