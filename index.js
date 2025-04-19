@@ -135,7 +135,7 @@ const connectToWhatsApp = async () => {
     switch (session.step) {
       case 0:
         await sock.sendMessage(sender, {
-          text: `Oi! Eu sou o Bico, seu assistente para encontrar profissionais incríveis pertinho de você. 💼🦆\n\nEstou em versão beta, então se algo parecer estranho, você pode me ajudar com sugestões aqui:\n📋 https://forms.gle/seu-link-aqui\n\nVamos começar? Me diz como posso te chamar. 😄`
+          text: `Oi! Eu sou o Bico, seu assistente para encontrar profissionais incríveis pertinho de você. 💼🦆\n\nEstou em versão beta, então se algo parecer estranho, você pode me ajudar com sugestões aqui:\n📋 https://forms.gle/43j6g39jTyJNFvyG6\n\nVamos começar? Me diz como posso te chamar. 😄`
         });
         session.step = 1;
         break;
