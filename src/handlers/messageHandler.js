@@ -28,14 +28,15 @@ export const handleMessage = async (sock, msg) => {
 
   const sender = msg.key.remoteJid;
   const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
-  const listResponse = msg.message?.listResponseMessage;
   const session = getSession(sender);
 
   refreshTimeout(sock, sender);
 
   switch (session.step) {
     case 0:
-      await sock.sendMessage(sender, { text: `Oi! Eu sou o Bico... Vamos começar? Me diz como posso te chamar. 😄` });
+      await sock.sendMessage(sender, { 
+        text: `Oi oi! 🦆 Eu sou o Bico, seu assistente para encontrar profissionais incríveis pertinho de você! 💼✨\n\nEstou em versão beta, então se você puder me ajudar dando sugestões ou relatar algum probleminha, é só clicar aqui:\n📋 https://forms.gle/43j6g39jTyJNFvyG6\n\nVamos começar? Como posso te chamar? 😄` 
+      });
       session.step = 1;
       break;
 
@@ -43,48 +44,32 @@ export const handleMessage = async (sock, msg) => {
       session.data.nome = text.trim();
       const services = await getAvailableServices();
       if (services.length === 0) {
-        await sock.sendMessage(sender, { text: "No momento não temos serviços cadastrados. Volte daqui a pouquinho! 😉" });
+        await sock.sendMessage(sender, { text: "No momento não temos serviços cadastrados. Volte daqui a pouquinho, tá bom? 🦆💬" });
         resetSession(sender);
         return;
       }
       session.data.serviceOptions = services;
 
-      const rows = services.map((service, index) => ({
-        title: service,
-        rowId: `service_${index}`
-      }));
+      const servicesList = services.map((service, index) => `${index + 1}. ${service}`).join('\n');
 
-      await sock.sendMessage(sender, {
-        text: `Prazer, ${session.data.nome}! Escolha o serviço que você está buscando:`,
-        sections: [{
-          title: "Serviços Disponíveis",
-          rows
-        }],
-        buttonText: "Escolher Serviço",
-        headerType: 1
-      }, { quoted: msg });
+      await sock.sendMessage(sender, { 
+        text: `Prazer em te conhecer, ${session.data.nome}! 😄🦆\n\nAqui estão os serviços disponíveis no momento:\n\n${servicesList}\n\nPor favor, envie apenas o número do serviço que você quer! 🔢` 
+      });
 
       session.step = 2;
       break;
 
     case 2:
-      let service;
-      if (listResponse) {
-        const selectedId = listResponse.singleSelectReply.selectedRowId;
-        const index = parseInt(selectedId.split('_')[1], 10);
-        service = session.data.serviceOptions?.[index];
-      } else {
-        const index = parseInt(text.trim(), 10) - 1;
-        service = session.data.serviceOptions?.[index];
-      }
+      const index = parseInt(text.trim(), 10) - 1;
+      const service = session.data.serviceOptions?.[index];
 
       if (!service) {
-        await sock.sendMessage(sender, { text: 'Por favor, selecione uma opção da lista ou envie o número correto. 🦆' });
+        await sock.sendMessage(sender, { text: 'Ops! 😵‍💫 Por favor, envie apenas o número correspondente ao serviço. Vamos tentar de novo! 🦆' });
         return;
       }
 
       session.data.service = service;
-      await sock.sendMessage(sender, { text: 'Agora me manda seu CEP pra buscar os profissionais! 🗺️' });
+      await sock.sendMessage(sender, { text: 'Ótima escolha! Agora me envie seu CEP para eu encontrar os profissionais mais pertinho de você! 📍' });
       session.step = 3;
       break;
 
@@ -106,17 +91,17 @@ export const handleMessage = async (sock, msg) => {
               await sendProfessionalList(sock, sender, cityResult);
               session.step = 5;
             } else {
-              await sock.sendMessage(sender, { text: "Hmm, não encontrei... Qual o nome da sua cidade? 🦆" });
+              await sock.sendMessage(sender, { text: "Hmm... não encontrei ninguém por esse CEP. 😔 Qual o nome da sua cidade? (exemplo: São Paulo) 🦆" });
               session.step = 6;
             }
           } else {
-            await sock.sendMessage(sender, { text: "Não consegui identificar a cidade pelo CEP. Me diga o nome dela. 🦆" });
+            await sock.sendMessage(sender, { text: "Não consegui identificar a cidade pelo CEP. 😔 Me diga o nome da sua cidade, por favor! 🦆" });
             session.step = 6;
           }
         }
       } catch (err) {
         console.error("Erro ao buscar profissionais:", err);
-        await sock.sendMessage(sender, { text: "Tivemos um probleminha aqui... tente novamente. 🦆" });
+        await sock.sendMessage(sender, { text: "Tivemos um probleminha técnico... 🛠️ Poderia tentar novamente daqui a pouco? 🦆" });
         session.step = 0;
       }
       break;
@@ -126,7 +111,7 @@ export const handleMessage = async (sock, msg) => {
       try {
         const cityResult = await findProfessionalsByCity(session.data.service, session.data.city);
         if (cityResult.empty) {
-          await sock.sendMessage(sender, { text: "Ainda não temos profissionais aí. Quer tentar outra cidade? (sim/não)" });
+          await sock.sendMessage(sender, { text: "Poxa... 😔 Ainda não temos profissionais nessa cidade. Gostaria de tentar outra cidade? (responda sim ou não) 🦆" });
           session.step = 4;
         } else {
           await sendProfessionalList(sock, sender, cityResult);
@@ -134,17 +119,17 @@ export const handleMessage = async (sock, msg) => {
         }
       } catch (err) {
         console.error("Erro ao buscar cidade:", err);
-        await sock.sendMessage(sender, { text: "Problema na busca... tente de novo! 🦆" });
+        await sock.sendMessage(sender, { text: "Probleminha técnico aqui do meu lado... 😵‍💫 Pode tentar novamente? 🦆" });
         session.step = 0;
       }
       break;
 
     case 4:
       if (text.toLowerCase() === 'sim') {
-        await sock.sendMessage(sender, { text: 'Me mande outro CEP! 🦆' });
+        await sock.sendMessage(sender, { text: 'Beleza! Me mande o novo CEP por favor. 📍🦆' });
         session.step = 3;
       } else {
-        await sock.sendMessage(sender, { text: 'Obrigado! Até a próxima! 👋' });
+        await sock.sendMessage(sender, { text: 'Muito obrigado por conversar comigo! Foi um prazer te ajudar. Volte sempre que precisar! 🦆💬' });
         resetSession(sender);
       }
       break;
@@ -153,30 +138,21 @@ export const handleMessage = async (sock, msg) => {
       if (text.toLowerCase() === 'sim') {
         const servicesAgain = await getAvailableServices();
         if (servicesAgain.length === 0) {
-          await sock.sendMessage(sender, { text: "Sem novos serviços no momento. 🦆" });
+          await sock.sendMessage(sender, { text: "No momento não temos novos serviços cadastrados. Volte em breve! 🦆" });
           resetSession(sender);
           return;
         }
         session.data.serviceOptions = servicesAgain;
 
-        const rowsAgain = servicesAgain.map((service, index) => ({
-          title: service,
-          rowId: `service_${index}`
-        }));
+        const servicesListAgain = servicesAgain.map((service, index) => `${index + 1}. ${service}`).join('\n');
 
-        await sock.sendMessage(sender, {
-          text: `Escolha outro serviço:`,
-          sections: [{
-            title: "Serviços Disponíveis",
-            rows: rowsAgain
-          }],
-          buttonText: "Escolher Serviço",
-          headerType: 1
-        }, { quoted: msg });
+        await sock.sendMessage(sender, { 
+          text: `Vamos lá! 🦆✨ Escolha outro serviço digitando o número correspondente:\n\n${servicesListAgain}` 
+        });
 
         session.step = 2;
       } else {
-        await sock.sendMessage(sender, { text: 'Até mais! 🦆' });
+        await sock.sendMessage(sender, { text: 'Espero ter ajudado! Quando precisar, estarei aqui. Um abraço do Bico! 🦆💬' });
         resetSession(sender);
       }
       break;
