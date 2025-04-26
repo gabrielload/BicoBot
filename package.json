@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "node src/index.js",
     "reset": "rmdir /s /q auth_info_baileys && node index.js"
     
   },
