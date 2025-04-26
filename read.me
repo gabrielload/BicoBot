@@ -1,0 +1,106 @@
+🦆 BicoBot — Assistente de Profissionais no WhatsApp
+O BicoBot é um chatbot automatizado para WhatsApp que conecta usuários a profissionais de serviços (como eletricistas, pintores, encanadores, etc) de forma rápida e prática.
+
+Projeto desenvolvido em Node.js usando a biblioteca Baileys para comunicação via WhatsApp Web e Firebase Firestore como banco de dados.
+
+—
+
+🚀 Funcionalidades
+Conexão com o WhatsApp via WebSocket (Baileys).
+
+Busca de profissionais cadastrados no Firestore.
+
+Fluxo de conversas com múltiplas etapas (nome → serviço → localização).
+
+Envio de ListMessages (listas interativas) para seleção de serviços.
+
+Sessões temporárias por usuário com timeout automático.
+
+Reconexão automática em caso de queda de conexão.
+
+Fácil escalabilidade para novos serviços e cidades.
+
+—
+
+📂 Estrutura de Pastas
+bash
+Copiar
+Editar
+src/
+│
+├── config/
+│   └── firebaseConfig.js      # Configurações do Firebase
+│
+├── services/
+│   ├── firebaseService.js     # Comunicação com Firestore
+│   ├── sessionManager.js      # Gerenciamento de sessões do usuário
+│
+├── handlers/
+│   └── messageHandler.js      # Lógica de atendimento das mensagens
+│
+└── index.js                   # Inicialização da conexão WhatsApp
+—
+
+⚙️ Tecnologias Utilizadas
+Node.js
+
+Baileys (WhatsApp Web API)
+
+Firebase Firestore
+
+PM2 (gerenciador de processos)
+
+Git (controle de versão)
+
+—
+
+🛠️ Instalação
+Clone o repositório:
+
+bash
+Copiar
+Editar
+git clone https://github.com/seu-usuario/BicoBot.git
+cd BicoBot
+Instale as dependências:
+
+bash
+Copiar
+Editar
+npm install
+Configure o Firebase:
+
+Edite o arquivo src/config/firebaseConfig.js com as credenciais do seu projeto no Firebase.
+
+Execute o projeto:
+
+bash
+Copiar
+Editar
+node src/index.js
+Ou, usando PM2:
+
+bash
+Copiar
+Editar
+pm2 start src/index.js --name BicoBot
+—
+
+🔄 Atualização do Bot (Deploy)
+Para puxar as últimas alterações do repositório Git e atualizar o bot:
+
+bash
+Copiar
+Editar
+cd /caminho/para/BicoBot
+git pull origin main
+npm install --production
+pm2 restart BicoBot
+—
+
+📝 Observações
+O bot precisa ser autenticado via QR Code no WhatsApp ao iniciar pela primeira vez.
+
+Caso queira testar em produção, é recomendado usar um número de WhatsApp Business separado.
+
+Em caso de erro de conexão, o bot tentará reconectar automaticamente.
